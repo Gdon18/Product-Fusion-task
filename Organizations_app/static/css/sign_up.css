@@ -1,0 +1,23 @@
+/* body {
+    background-image: url("{% static 'image/blog-3.jpg' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+} */
+
+.card {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+}

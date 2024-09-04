@@ -30,8 +30,10 @@ SECRET_KEY = 'django-insecure-=fich1yq3y8#c&dgr_-^ub1s+u^j+k^j*$mhq4v1rr519@@=e=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+
+RESEND_API_KEY = 're_123456789' 
 
 # Application definition
 
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'Organizations_app',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -137,3 +140,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
+# JWT settings
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.resend.com'  # Replace with your SMTP server
+EMAIL_PORT = 465  # Use 465 for SSL, 587 for TLS
+EMAIL_USE_TLS = False  # Set to True for TLS
+EMAIL_USE_SSL = True  # Set to True for SSL
+EMAIL_HOST_USER = 'gr4279841@gmail.com'  # Your email address
+EMAIL_HOST_PASSWORD = 'gr4279841'  # Your email password
+# DEFAULT_FROM_EMAIL = 'gokulraj29007@gmail.com'  # Default "from" email

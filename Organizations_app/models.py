@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.utils import timezone
 # Create your models here.
 class Organisation(models.Model):
     name = models.CharField(max_length=255, null=False)
@@ -13,14 +13,15 @@ class Organisation(models.Model):
         return self.name
     
 class User(models.Model):
-    email = models.CharField(max_length=255,unique=True, null=False)
+    email = models.CharField(max_length=255)
     password = models.CharField(max_length=255, null=False)
     profile = models.JSONField(default=dict, null=False)
     status = models.IntegerField(default=0, null=False)
     settings = models.JSONField(default=dict, null=True)
     created_at = models.BigIntegerField(null=True)
     updated_at = models.BigIntegerField(null=True)
-
+    last_login = models.DateTimeField(null=True, blank=True, default=timezone.now)
+    
     def __str__(self):
         return self.email
     
