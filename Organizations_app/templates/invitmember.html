@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/sign_up.css' %}" rel="stylesheet" type="text/css">
+<style>
+    body {
+            background-image: url("{% static 'image/blog-4.jpg' %}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+</style>
+</head>
+<body>
+    <div class="container-fluid vh-100 d-flex justify-content-center align-items-center">
+        <div class="row w-100">
+            <div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-10 offset-1">
+                <div class="card p-4">
+                    <h2 class="text-center mb-4">Invite Members</h2>
+                    <form id="invite-member">
+                        {% csrf_token %}
+                        <div class="mb-3 d-none">
+                            <label for="email">Member Email:</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ email }}">
+                        </div>
+                        <div class="mb-3 d-none">
+                            <label for="org_id">Organization ID:</label>
+                            <input type="text" class="form-control" id="org_id" name="org_id" value="{{ org_id }}">
+                        </div>
+                        <div class="mb-3 d-none">
+                            <label for="role_id">Role ID:</label>
+                            <input type="text" class="form-control" id="role_id" name="role_id" value="{{ Role_id }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary " style="margin-left: 150px;">Invite Member</button>
+                    </form>
+                    <!-- <div class="text-center mt-3">
+                        <a href="{% url 'signin' %}">Sign In</a>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+    document.getElementById('invite-member').addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const email = document.getElementById('email').value;
+    const orgId = document.getElementById('org_id').value;
+    const roleId = document.getElementById('role_id').value;
+    
+    const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+    const csrftoken = csrfTokenElement ? csrfTokenElement.value : '';
+
+    if (!csrftoken) {
+        alert('CSRF token not found. Please reload the page and try again.');
+        return;
+    }
+    const response = await fetch('/InviteMemberView/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken,
+        },
+        body: JSON.stringify({ email, org_id: orgId, role_id: roleId }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        alert('Member invited!');
+    } else {
+        alert(`Error: ${data.error}`);
+    }
+});
+ </script>
+</body>
+</html>

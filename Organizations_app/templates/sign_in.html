@@ -73,7 +73,7 @@
                 localStorage.setItem('access_token', data.access);
                 localStorage.setItem('refresh_token', data.refresh);
                 alert('Signed in successfully!');
-                window.location.href = '/';
+                window.location.href = `/invitemember/${encodeURIComponent(email)}/`;
             } else {
                 alert(`Error: ${data.error}`);
             }

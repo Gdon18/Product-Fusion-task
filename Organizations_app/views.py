@@ -28,7 +28,16 @@ def sign_in(request):
     return render(request,"sign_in.html")
 def forgetpassword(request):
     return render(request,"reset.html")
-
+def invitemember(request, email):
+    # Now you can use the `email` variable here
+    user = User.objects.get(email=email)
+    member = Member.objects.filter(user_id=user.id).first()
+    context = {
+        'email': email,
+        'org_id':member.org_id if member else None,
+        'Role_id':member.role_id if member else None,
+    }
+    return render(request, "invitmember.html", context)
 
 
 def generate_jwt_tokens(user):
@@ -64,18 +73,18 @@ def SignInView(request):
     email = data.get('email')
     password = data.get('password')
     print(password,email)
-    user = User.objects.get(email=email)
+    user = User.objects.filter(email=email).first()
     if user.password == password:
         tokens = generate_jwt_tokens(user)
-        params = {
-                "from": "Acme <onboarding@resend.dev>",
-                "to": [email],
-                "subject": "Welcome!",
-                "html": "<p>You have been signed In successfully.</p>"
-            }
+        # params = {
+        #         "from": "Acme <onboarding@resend.dev>",
+        #         "to": [email],
+        #         "subject": "Welcome!",
+        #         "html": "<p>You have been signed In successfully.</p>"
+        #     }
 
-        email_response = resend.Emails.send(params)
-        print(email_response)
+        # email_response = resend.Emails.send(params)
+        # print(email_response)
         return Response(tokens, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
@@ -197,3 +206,33 @@ def ResetPasswordConfirm(request,uidb64,token):
     else:
         return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(['POST'])
+def InviteMemberView(request):
+    data = json.loads(request.body)
+    email = data.get('email')
+    org_id = data.get('org_id')
+    role_id = data.get('role_id')
+
+    user = User.objects.filter(email=email).first()
+    if not user:
+        return Response({'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+    org = Organisation.objects.filter(id=org_id).first()
+    role = Role.objects.filter(id=role_id).first()
+    if not org or not role:
+        return Response({'error': 'Invalid organization or role'}, status=status.HTTP_400_BAD_REQUEST)
+
+    member, created = Member.objects.get_or_create(user=user, org=org, role=role)
+    if created:
+        params = {
+        "from": "Acme <onboarding@resend.dev>",
+        "to": [email],
+        "subject": 'You have been invited!',
+        "html": f'You have been invited to the organization {org.name} with the role {role.name}'
+        }
+
+        email_response = resend.Emails.send(params)
+        return Response({'message': 'Member invited'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Member already exists'}, status=status.HTTP_400_BAD_REQUEST)
