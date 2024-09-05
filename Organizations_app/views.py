@@ -5,7 +5,6 @@ from django.conf import settings
 from .models import User, Organisation, Member, Role
 from rest_framework.response import Response
 from rest_framework import status
-# from .utils import generate_jwt_tokens
 from django.utils.encoding import force_bytes, force_str
 import resend
 from resend import Emails
@@ -19,7 +18,7 @@ import jwt
 from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from .utils import account_activation_token
-
+from django.shortcuts import render, get_object_or_404
 from datetime import datetime, timedelta
 
 def sign_up(request):
@@ -28,16 +27,22 @@ def sign_in(request):
     return render(request,"sign_in.html")
 def forgetpassword(request):
     return render(request,"reset.html")
+
+
 def invitemember(request, email):
-    # Now you can use the `email` variable here
-    user = User.objects.get(email=email)
-    member = Member.objects.filter(user_id=user.id).first()
+    user = get_object_or_404(User, email=email)
+    print(user.id)
+    member = Member.objects.get(user_id=user.id)
     context = {
+        'user_id':user.id,
         'email': email,
-        'org_id':member.org_id if member else None,
-        'Role_id':member.role_id if member else None,
+        'org_id': member.org_id.id,
+        'Role_id': member.role_id.id,
     }
     return render(request, "invitmember.html", context)
+
+def updatememeber(request):
+    return render(request,"update.html")
 
 
 def generate_jwt_tokens(user):
@@ -76,15 +81,15 @@ def SignInView(request):
     user = User.objects.filter(email=email).first()
     if user.password == password:
         tokens = generate_jwt_tokens(user)
-        # params = {
-        #         "from": "Acme <onboarding@resend.dev>",
-        #         "to": [email],
-        #         "subject": "Welcome!",
-        #         "html": "<p>You have been signed In successfully.</p>"
-        #     }
+        params = {
+                "from": "Acme <onboarding@resend.dev>",
+                "to": [email],
+                "subject": "Welcome!",
+                "html": "<p>You have been signed In successfully.</p>"
+            }
 
-        # email_response = resend.Emails.send(params)
-        # print(email_response)
+        email_response = resend.Emails.send(params)
+        print(email_response)
         return Response(tokens, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
@@ -236,3 +241,26 @@ def InviteMemberView(request):
         return Response({'message': 'Member invited'}, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Member already exists'}, status=status.HTTP_400_BAD_REQUEST)
+    
+def UpdateMemberRole(request, user_id, org_id):
+    role_id = request.data.get('role_id')
+
+    member = Member.objects.filter(user_id=user_id, org_id=org_id).first()
+    if not member:
+        return Response({'error': 'Member not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    role = Role.objects.filter(id=role_id).first()
+    if not role:
+        return Response({'error': 'Role not found'}, status=status.HTTP_400_BAD_REQUEST)
+
+    member.role = role
+    member.save()
+    return Response({'message': 'Member role updated'}, status=status.HTTP_200_OK)
+
+def delete(request, user_id, org_id):
+    member = Member.objects.filter(user_id=user_id, org_id=org_id).first()
+    if not member:
+        return Response({'error': 'Member not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    member.delete()
+    return Response({'message': 'Member deleted'}, status=status.HTTP_200_OK)
